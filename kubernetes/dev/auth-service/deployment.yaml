@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: auth-dev
+  labels:
+    app.kubernetes.io/name: auth-service
+    
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: auth-dev
+  labels:
+    app: auth-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      annotations:
+        cloud.google.com/neg: '{"exposed_ports": {"80":{}}}'
+      labels:
+        app: auth-service
+    spec:
+      # Use the Kubernetes ServiceAccount annotated for Workload Identity
+      serviceAccountName: gke-sa
+      containers:
+        - name: auth-service
+          # Image name will be overridden via kustomization.yaml (images:)
+          # Logical image reference (kustomize will replace newName)
+          image: auth-service
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              name: http
+            - containerPort: 50051
+              name: grpc
+          # Consume DB credentials and Firebase JSON from a single Kubernetes Secret
+          # The SealedSecret controller will create a Kubernetes Secret named `auth-service-secrets` from the SealedSecret.
+          envFrom:
+            - secretRef:
+                name: auth-service-secrets
+          readinessProbe:
+            httpGet:
+              path: /auth/health
+              port: 3000
+            initialDelaySeconds: 2
+            periodSeconds: 5
+
+          livenessProbe:
+            httpGet:
+              path: /auth/health
+              port: 3000
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+          # Mount the Firebase service account JSON from the same Secret (key: firebase-service-account.json)
+          #env:
+          #  - name: FIREBASE_SERVICE_ACCOUNT_PATH
+          #    value: /secrets/firebase-service-account.json
+          #volumeMounts:
+          #  - name: sealed-secrets-volume
+          #    mountPath: /secrets/firebase-service-account.json
+          #    subPath: firebase-service-account.json
+          #    readOnly: true
+      #volumes:
+      #  - name: sealed-secrets-volume
+      #    secret:
+      #      secretName: sealed-secrets
+      #      optional: false
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: auth-dev
+  labels:
+    app: auth-service
+  #annotations:
+  #  cloud.google.com/backend-config: '{"default":"auth-config"}'
+  #  cloud.google.com/app-protocols: '{"http":"HTTP"}'
+spec:
+  type: ClusterIP
+  selector:
+    app: auth-service
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+    - name: grpc
+      port: 50051
+      targetPort: 50051

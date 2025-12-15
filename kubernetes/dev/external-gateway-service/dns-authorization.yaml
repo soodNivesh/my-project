@@ -1,0 +1,7 @@
+apiVersion: certificatemanager.cnrm.cloud.google.com/v1beta1
+kind: CertificateManagerDnsAuthorization
+metadata:
+  name: lightspeed-dns-auth
+  namespace: ingress-dev
+spec:
+  domain: api.lightspeed.rapidqs.com

@@ -1,0 +1,28 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: project-route
+  namespace: project-dev
+spec:
+  parentRefs:
+    - name: external-api-gateway
+      namespace: ingress-dev
+  hostnames:
+    - api.lightspeed.rapidqs.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /project
+      backendRefs:
+        - name: project-service
+          namespace: project-dev
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /static
+      backendRefs:
+        - name: project-service
+          namespace: project-dev
+          port: 80
