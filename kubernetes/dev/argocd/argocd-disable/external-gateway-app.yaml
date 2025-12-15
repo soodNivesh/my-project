@@ -7,7 +7,7 @@ spec:
   project: default
 
   source:
-    repoURL: git@github.com:possibl-ai/lightspeed-iac.git
+    repoURL: git@github.com:soodNivesh/my-project.git
     targetRevision: main
     path: kubernetes/dev/external-gateway-service
 
@@ -21,3 +21,4 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+
