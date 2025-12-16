@@ -1,4 +1,4 @@
-my-platform-repo/
+my-project/
 ├── README.md                          # Entry point: overview of platform, architecture, and workflows
 │
 ├── apps/                              # Application source code (build-time concerns)
