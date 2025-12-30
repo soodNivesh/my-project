@@ -1,0 +1,31 @@
+#spec:
+  #destination:
+   # server: https://kubernetes.default.svc
+   # namespace: backend-dev
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: backend
+  namespace: argocd
+spec:
+  project: dev
+  source:
+    repoURL: https://github.com/your-org/my-project
+    path: helm/backend  #ubernetes/dev/argocd/kustomize
+    targetRevision: main
+    #helm:
+     # valueFiles:
+      #  - values-prod.yaml
+      
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true

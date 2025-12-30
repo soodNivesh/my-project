@@ -1,22 +1,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: backend
+  name: frontend
   namespace: argocd
 spec:
   project: dev
   source:
-    repoURL: "https://github.com/soodNivesh/my-project.git"        ## https://github.com/soodNivesh/my-project.git  Need to decide
-    targetRevision: development-1
-    path: helm/backend    
+    repoURL: https://github.com/soodNivesh/my-project.git     
+    targetRevision: development-1     ##Need to specify the branch
+    path: helm/frontend
     helm:
       valueFiles:
         - values.yaml
-
   destination:
     server: https://kubernetes.default.svc
-    namespace: backend
-
+    namespace: frontend
   syncPolicy:
     automated:
       prune: true

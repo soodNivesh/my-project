@@ -1,0 +1,63 @@
+# This is a YAML-formatted file.
+
+namespace:
+  name: backend
+  create: true
+  labels:
+    app.kubernetes.io/name: backend    ## Nedd to change 
+image:
+  repository: asia-south2-docker.pkg.dev/corded-forge-481305-n1/ci-repo/backend  
+  tag: "e38d155ba2ba4421fa466f8567110a4b1b2293cc" #Need to update tag for new version
+  pullPolicy: IfNotPresent
+replicaCount: 2
+serviceAccount:
+  create: true
+  name: gke-sa
+  annotations:
+    # Replace with your GCP service account to enable Workload Identity
+    iam.gke.io/gcp-service-account: "github-work-service-account@corded-forge-481305-n1.iam.gserviceaccount.com"  
+deployment:
+  labels:
+    app: backend     ## Neded to change 
+  annotations:
+    cloud.google.com/neg: '{"exposed_ports": {"80":{}}}'  //Need to look into it .
+  ports:
+    http: 3000        ## Need to change  
+  readinessProbe:
+    httpGet:
+      path: /backend/health      #Need to change 
+      port: 3000              # Need to change
+    initialDelaySeconds: 2
+    periodSeconds: 5
+  livenessProbe:
+    httpGet:
+      path: /backend/health    #Need to change
+      port: 3000             #Need to change
+    initialDelaySeconds: 3
+    periodSeconds: 5
+    timeoutSeconds: 2
+    failureThreshold: 3
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+service:
+  type: ClusterIP
+  ports:
+    http:
+      port: 80             ## Need to change
+      targetPort: 3000     
+    
+sealedSecret:
+  create: true                  ##Needed to change
+  name: backend-secrets      ##Needed to change
+  clusterWide: true          ##Need to change
+  encryptedData:    ###Need to change
+     DATABASE_URL: 
+  

@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "backend.name" . }} #backend.name       
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "backend.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include ".selectorLabels" . | nindent 6 }} // Need to change labels
+  template:
+    metadata:
+      annotations:
+        {{- toYaml .Values.deployment.annotations | nindent 8 }} // Need to look into it.
+      labels:
+       {{- include "backend.selectorLabels" . | nindent 8 }} 
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}      //gke-secret-reader
+      containers:
+        - name: {{ include "backend.name" . }}       
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}   // CHANGE ONCE REPOSITORY NAME CHANGE 
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: {{ .Values.deployment.securityContext.runAsUser }}
+            runAsGroup: {{ .Values.deployment.securityContext.runAsGroup }}
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            {{- toYaml .Values.deployment.resources | nindent 12 }}
+          
+          ports:
+            ports:
+            - name: http
+              containerPort: {{ .Values.deployment.ports.http }}
+          
+          envFrom:
+            - secretRef:
+                name: {{ .Values.sealedSecret.name }}  // sEALED SECRET FILE 
+          #env:
+           # - name: DB_PASSWORD
+            #  valueFrom:
+              #  secretKeyRef:
+                #  name: db-password
+                #  key: password
+
+          readinessProbe:
+            {{- toYaml .Values.deployment.readinessProbe | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.deployment.livenessProbe | nindent 12 }}

@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Namespace applied by these resources
+namespace: auth-dev
+
+resources:
+- deployment.yaml
+- service-account.yaml
+- sealed-secrets.yaml
+
+# Replace the image used by the Deployment. Edit these values for your project/registry.
+    # Set newName to your registry path (Artifact Registry or GCR)
+    # Example (GCR): gcr.io/my-project/auth-service
+    # Example (Artifact Registry): us-central1-docker.pkg.dev/my-project/my-repo/auth-service
+    # Include the tag directly in newName to set both path and tag here
+images:
+- name: auth-service
+  newName: us-east4-docker.pkg.dev/rapidqs-lightspeed/ci-cd-repo/auth-service:c7886c9320e03d0d5648fb25bc8187c3132b02db
+
+labels:
+- includeSelectors: true
+  pairs:
+    app.kubernetes.io/managed-by: kustomize
+
