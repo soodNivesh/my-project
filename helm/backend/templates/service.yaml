@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backend-sa
+  annotations:
+    iam.gke.io/gcp-service-account: gke-secret-reader@corded-forge-481305-n1.iam.gserviceaccount.com
+

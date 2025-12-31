@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      serviceAccountName: backend-sa
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: backend-db-secrets
+        
+       volumeMounts:
+            - name: secrets-store
+              mountPath: "/mnt/secrets"
+              readOnly: true        
+      containers:
+
+      # ================= BACKEND CONTAINER =================
+      - name: backend
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        ports:
+          - containerPort: 3000
+        env:
+          - name: DB_HOST
+            value: 34.131.247.230
+          - name: DB_PORT
+            value: "5432"
+          - name: DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: backend-db-secret
+                key: db_name
+          - name: DB_USER             
+            valueFrom:
+              secretKeyRef:
+                name: backend-db-secret
+                key: db_user
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: backend-db-secret
+                key: db_password
+ 
+      # ================= CLOUD SQL PROXY =================
+      - name: cloud-sql-proxy
+        image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.0
+        args:
+          - "--structured-logs"
+          - "--port=5432"
+          - "corded-forge-481305-n1:asia-south2:db-instance"
+
+        
+         #  - "PROJECT_ID:REGION:my-backend-db"   // Need to change
+        securityContext:
+          runAsNonRoot: true
