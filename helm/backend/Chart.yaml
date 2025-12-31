@@ -1,15 +1,6 @@
-<<<<<<< HEAD
 apiVersion: v2
 name: backend
 description: Backend service Helm chart
 type: application
 version: 0.1.0
 appVersion: "1.0.0"
-=======
-apiVersion: v2
-name: backend
-description: Backend service Helm chart
-type: application
-version: 0.1.0
-appVersion: "1.0.0"
->>>>>>> 45ec9651fbefa8c48da6254b433b6b9bc03dad0a
