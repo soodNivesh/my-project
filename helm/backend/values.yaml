@@ -1,1 +1,4 @@
 replicaCount: 1
+image:
+  repository: asia-south2-docker.pkg.dev/corded-forge-481305-n1/ci-repo/backend
+  tag: a6c99a76f97aa5d60ccbc2451fb2b72a5296c5c1
